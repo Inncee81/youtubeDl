@@ -26,6 +26,14 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+
+    sourceSets {
+        main {
+            python {
+                srcDirs += "${project.projectDir}/src/main/python/youtube-dl"
+            }
+        }
+    }
 }
 
 dependencies {
