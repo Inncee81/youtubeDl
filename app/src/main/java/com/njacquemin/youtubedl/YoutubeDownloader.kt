@@ -23,21 +23,33 @@ class YoutubeDownloader(val context: Context, val callbacks: Callbacks?) {
     private var ytDownloader: PyObject
 
     @Synchronized
-    fun download(link: String, output: File){
+    fun download(link: String, output: File) {
         ytDownloader.callAttr("download", arrayOf(link))
 
-        ffmpeg.execute(arrayOf("-i", File(context.filesDir, "yt-dl.tmp").absolutePath, output.absolutePath), object : ExecuteBinaryResponseHandler() {
+        ffmpeg.execute(
+            arrayOf("-i", File(context.filesDir, "yt-dl.tmp").absolutePath, output.absolutePath),
+            object : ExecuteBinaryResponseHandler() {
 
-            override fun onStart() {callbacks?.onFfmpegStart()}
+                override fun onStart() {
+                    callbacks?.onFfmpegStart()
+                }
 
-            override fun onProgress(message: String?) {callbacks?.onFfmpegProgress(message)}
+                override fun onProgress(message: String?) {
+                    callbacks?.onFfmpegProgress(message)
+                }
 
-            override fun onFailure(message: String?) {callbacks?.onFfmpegFailure(message)}
+                override fun onFailure(message: String?) {
+                    callbacks?.onFfmpegFailure(message)
+                }
 
-            override fun onSuccess(message: String?) {callbacks?.onFfmpegSuccess(message)}
+                override fun onSuccess(message: String?) {
+                    callbacks?.onFfmpegSuccess(message)
+                }
 
-            override fun onFinish() {callbacks?.onFfmpegFinish()}
-        })
+                override fun onFinish() {
+                    callbacks?.onFfmpegFinish()
+                }
+            })
     }
 
     init {
