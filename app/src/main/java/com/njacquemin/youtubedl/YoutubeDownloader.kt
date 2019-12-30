@@ -6,6 +6,7 @@ import com.chaquo.python.Python
 import com.chaquo.python.android.AndroidPlatform
 import com.github.hiteshsondhi88.libffmpeg.ExecuteBinaryResponseHandler
 import com.github.hiteshsondhi88.libffmpeg.FFmpeg
+import java.io.File
 
 class YoutubeDownloader(val context: Context, val callbacks: Callbacks?) {
 
@@ -22,10 +23,10 @@ class YoutubeDownloader(val context: Context, val callbacks: Callbacks?) {
     private var ytDownloader: PyObject
 
     @Synchronized
-    fun download(link: String){
+    fun download(link: String, output: File){
         ytDownloader.callAttr("download", arrayOf(link))
 
-        ffmpeg.execute(arrayOf("-i", "/sdcard/yt-dl-$link.tmp", "/sdcard/yt-dl-$link.mp3"), object : ExecuteBinaryResponseHandler() {
+        ffmpeg.execute(arrayOf("-i", File(context.filesDir, "yt-dl.tmp").absolutePath, output.absolutePath), object : ExecuteBinaryResponseHandler() {
 
             override fun onStart() {callbacks?.onFfmpegStart()}
 
@@ -47,7 +48,7 @@ class YoutubeDownloader(val context: Context, val callbacks: Callbacks?) {
         val py = Python.getInstance()
 
         val options = py.builtins.callAttr("dict")
-        options.callAttr("__setitem__", "outtmpl", "/sdcard/yt-dl-%(url)s.tmp")
+        options.callAttr("__setitem__", "outtmpl", File(context.filesDir, "yt-dl.tmp").absolutePath)
         options.callAttr("__setitem__", "format", "bestaudio/best")
 
         val yt = py.getModule("youtube_dl")

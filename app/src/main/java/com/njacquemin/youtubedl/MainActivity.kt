@@ -2,6 +2,7 @@ package com.njacquemin.youtubedl
 
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
+import java.io.File
 
 class MainActivity : AppCompatActivity() {
 
@@ -10,6 +11,6 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         val yt = YoutubeDownloader(this, null)
-        yt.download("https://www.youtube.com/watch?v=BaW_jenozKc")
+        yt.download("https://www.youtube.com/watch?v=BaW_jenozKc", File("sdcard", "test.mp3"))
     }
 }
