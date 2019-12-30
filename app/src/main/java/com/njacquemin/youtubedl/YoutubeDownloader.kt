@@ -43,7 +43,9 @@ class YoutubeDownloader(val context: Context, val callbacks: Callbacks?) {
     init {
         ffmpeg.loadBinary(null) // It will fail with exception if it cannot be loaded. This should not happen
 
-        Python.start(AndroidPlatform(context))
+        if (!Python.isStarted()) {
+            Python.start(AndroidPlatform(context))
+        }
 
         val py = Python.getInstance()
 
