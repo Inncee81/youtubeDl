@@ -9,7 +9,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        val yt = YoutubeDownloader(this)
+        val yt = YoutubeDownloader(this, null)
         yt.download("https://www.youtube.com/watch?v=BaW_jenozKc")
     }
 }
