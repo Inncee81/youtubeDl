@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Téléchargement Youtube</string>
+    <string name="link_name">Nom du fichier</string>
+    <string name="set_name">Entrer le nom du fichier</string>
+    <string name="link">Lien youtube</string>
+    <string name="add_link">Ajouter un lien</string>
+</resources>
