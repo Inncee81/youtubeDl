@@ -1,5 +1,6 @@
 package com.njacquemin.youtubedl
 
+import android.Manifest
 import android.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
@@ -16,8 +17,13 @@ import kotlinx.android.synthetic.main.dialog_add_link.view.*
 import java.io.File
 import android.content.Context
 import android.content.SharedPreferences
+import android.content.pm.PackageManager
+import android.util.Log
 import com.google.gson.reflect.TypeToken
 
+private val PERMISSIONS = arrayOf(
+    Manifest.permission.READ_EXTERNAL_STORAGE
+)
 
 private fun layoutParam(weight: Float): TableRow.LayoutParams {
     return TableRow.LayoutParams(
@@ -84,7 +90,33 @@ class MainActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        redrawTable()
+
+        if (checkPermission()){
+            redrawTable()
+        } else {
+            requestPermissions(PERMISSIONS, 0)
+        }
+    }
+
+    private fun checkPermission(): Boolean {
+        for (permission in PERMISSIONS) {
+            if (checkSelfPermission(permission) != PackageManager.PERMISSION_GRANTED) {
+                return false
+            }
+        }
+        return true
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int, permissions: Array<String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (checkPermission()){
+            redrawTable()
+        } else {
+            requestPermissions(PERMISSIONS, 0)
+        }
     }
 
     override fun onPause() {
