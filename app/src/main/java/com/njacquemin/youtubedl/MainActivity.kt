@@ -18,11 +18,10 @@ import java.io.File
 import android.content.Context
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
-import android.util.Log
 import com.google.gson.reflect.TypeToken
 
 private val PERMISSIONS = arrayOf(
-    Manifest.permission.READ_EXTERNAL_STORAGE
+    Manifest.permission.WRITE_EXTERNAL_STORAGE
 )
 
 private fun layoutParam(weight: Float): TableRow.LayoutParams {
