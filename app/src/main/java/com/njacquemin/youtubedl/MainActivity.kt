@@ -1,18 +1,16 @@
 package com.njacquemin.youtubedl
 
 import android.app.AlertDialog
-import android.app.Dialog
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
-import java.io.File
 import android.content.Intent
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.TableRow
 import android.widget.TextView
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.dialog_link_name.view.*
+import kotlinx.android.synthetic.main.dialog_add_link.view.*
 
 private fun layoutParam(weight: Float): TableRow.LayoutParams {
     return TableRow.LayoutParams(
@@ -55,6 +53,22 @@ class MainActivity : AppCompatActivity() {
                     android.R.string.ok
                 ) { _, _ ->
                     val name = dialogView.link_name.text.toString()
+                    downloads.add(Download(ytLink, name, false))
+                    redrawTable()
+                }.create().show()
+        }
+
+        add_button.setOnClickListener {
+            val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_add_link, null) as View
+            AlertDialog.Builder(this)
+                .setView(dialogView)
+                .setTitle(getString(R.string.add_link))
+                .setNegativeButton(android.R.string.cancel, null)
+                .setPositiveButton(
+                    android.R.string.ok
+                ) { _, _ ->
+                    val ytLink = dialogView.link.text.toString()
+                    val name = dialogView.name.text.toString()
                     downloads.add(Download(ytLink, name, false))
                     redrawTable()
                 }.create().show()
