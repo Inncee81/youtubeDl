@@ -1,12 +1,15 @@
 package com.njacquemin.youtubedl
 
 import android.content.Context
+import android.util.Log
 import com.chaquo.python.PyObject
 import com.chaquo.python.Python
 import com.chaquo.python.android.AndroidPlatform
 import com.github.hiteshsondhi88.libffmpeg.ExecuteBinaryResponseHandler
 import com.github.hiteshsondhi88.libffmpeg.FFmpeg
 import java.io.File
+
+private const val FFMPEG_TAG = "FFMPEG"
 
 class YoutubeDownloader(val context: Context, val callbacks: Callbacks?) {
 
@@ -34,24 +37,29 @@ class YoutubeDownloader(val context: Context, val callbacks: Callbacks?) {
             object : ExecuteBinaryResponseHandler() {
 
                 override fun onStart() {
+                    Log.d(FFMPEG_TAG, "Start")
                     callbacks?.onFfmpegStart()
                 }
 
                 override fun onProgress(message: String?) {
+                    Log.d(FFMPEG_TAG, "Progress: $message")
                     callbacks?.onFfmpegProgress(message)
                 }
 
                 override fun onFailure(message: String?) {
+                    Log.d(FFMPEG_TAG, "Failure: $message")
                     callbacks?.onFfmpegFailure(message)
                 }
 
                 override fun onSuccess(message: String?) {
+                    Log.d(FFMPEG_TAG, "Success: $message")
                     callbacks?.onFfmpegSuccess(message)
+                    doneCallback()
                 }
 
                 override fun onFinish() {
+                    Log.d(FFMPEG_TAG, "Finish")
                     callbacks?.onFfmpegFinish()
-                    doneCallback()
                 }
             })
     }
