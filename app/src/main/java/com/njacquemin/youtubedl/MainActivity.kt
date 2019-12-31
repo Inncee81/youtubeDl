@@ -185,8 +185,8 @@ class MainActivity : AppCompatActivity() {
                     setImageResource(R.drawable.ic_access_time_black_24dp)
                     isEnabled = false
                     // Launch download
-                    youtube.download(dl.link, File("sdcard", dl.name + ".mp3")) {
-                        downloads.find { candidate -> candidate == dl }?.downloaded = true
+                    youtube.download(dl.link, File("sdcard", dl.name + ".mp3")) {success ->
+                        downloads.find { candidate -> candidate == dl }?.downloaded = success
                         redrawTable()
                     }
                 }

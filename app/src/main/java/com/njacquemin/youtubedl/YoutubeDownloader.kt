@@ -1,6 +1,9 @@
 package com.njacquemin.youtubedl
 
 import android.content.Context
+import android.os.Handler
+import android.os.HandlerThread
+import android.os.Looper
 import android.util.Log
 import com.chaquo.python.PyObject
 import com.chaquo.python.Python
@@ -21,47 +24,60 @@ class YoutubeDownloader(val context: Context, val callbacks: Callbacks?) {
         fun onFfmpegFinish()
     }
 
+    private val handlerThread = HandlerThread("backgroundThread").apply {
+        start()
+    }
+    private val backgroundHandler = Handler(handlerThread.looper)
+
+    private val mainHandler = Handler(Looper.getMainLooper())
+
     private val ffmpeg = FFmpeg.getInstance(context)!!
 
     private var ytDownloader: PyObject
 
-    @Synchronized
-    fun download(link: String, output: File, doneCallback: () -> Unit) {
-        ytDownloader.callAttr("download", arrayOf(link))
+    fun download(link: String, output: File, doneCallback: (success: Boolean) -> Unit) {
+        backgroundHandler.post {
+            ytDownloader.callAttr("download", arrayOf(link))
 
-        while (ffmpeg.isFFmpegCommandRunning) {
-            Thread.sleep(1000)
+            while (ffmpeg.isFFmpegCommandRunning) {
+                Thread.sleep(1000)
+            }
+            ffmpeg.execute(
+                arrayOf("-i", File(context.filesDir, "yt-dl.tmp").absolutePath, output.absolutePath),
+                object : ExecuteBinaryResponseHandler() {
+
+                    override fun onStart() {
+                        Log.d(FFMPEG_TAG, "Start")
+                        callbacks?.onFfmpegStart()
+                    }
+
+                    override fun onProgress(message: String?) {
+                        Log.d(FFMPEG_TAG, "Progress: $message")
+                        callbacks?.onFfmpegProgress(message)
+                    }
+
+                    override fun onFailure(message: String?) {
+                        Log.d(FFMPEG_TAG, "Failure: $message")
+                        callbacks?.onFfmpegFailure(message)
+                        mainHandler.post {
+                            doneCallback(false)
+                        }
+                    }
+
+                    override fun onSuccess(message: String?) {
+                        Log.d(FFMPEG_TAG, "Success: $message")
+                        callbacks?.onFfmpegSuccess(message)
+                        mainHandler.post {
+                            doneCallback(true)
+                        }
+                    }
+
+                    override fun onFinish() {
+                        Log.d(FFMPEG_TAG, "Finish")
+                        callbacks?.onFfmpegFinish()
+                    }
+                })
         }
-        ffmpeg.execute(
-            arrayOf("-i", File(context.filesDir, "yt-dl.tmp").absolutePath, output.absolutePath),
-            object : ExecuteBinaryResponseHandler() {
-
-                override fun onStart() {
-                    Log.d(FFMPEG_TAG, "Start")
-                    callbacks?.onFfmpegStart()
-                }
-
-                override fun onProgress(message: String?) {
-                    Log.d(FFMPEG_TAG, "Progress: $message")
-                    callbacks?.onFfmpegProgress(message)
-                }
-
-                override fun onFailure(message: String?) {
-                    Log.d(FFMPEG_TAG, "Failure: $message")
-                    callbacks?.onFfmpegFailure(message)
-                }
-
-                override fun onSuccess(message: String?) {
-                    Log.d(FFMPEG_TAG, "Success: $message")
-                    callbacks?.onFfmpegSuccess(message)
-                    doneCallback()
-                }
-
-                override fun onFinish() {
-                    Log.d(FFMPEG_TAG, "Finish")
-                    callbacks?.onFfmpegFinish()
-                }
-            })
     }
 
     init {
