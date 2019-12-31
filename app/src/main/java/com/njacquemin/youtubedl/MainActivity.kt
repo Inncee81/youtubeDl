@@ -9,10 +9,15 @@ import android.view.View
 import android.widget.ImageButton
 import android.widget.TableRow
 import android.widget.TextView
+import com.google.gson.Gson
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.dialog_link_name.view.*
 import kotlinx.android.synthetic.main.dialog_add_link.view.*
 import java.io.File
+import android.content.Context
+import android.content.SharedPreferences
+import com.google.gson.reflect.TypeToken
+
 
 private fun layoutParam(weight: Float): TableRow.LayoutParams {
     return TableRow.LayoutParams(
@@ -30,16 +35,16 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var youtube: YoutubeDownloader
 
+    private lateinit var sharedPrefs: SharedPreferences
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        loadDownloads()
-
         youtube = YoutubeDownloader(this, null)
+        sharedPrefs = getSharedPreferences("MyPreferences", Context.MODE_PRIVATE)
 
-
-        //youtube.download("https://www.youtube.com/watch?v=BaW_jenozKc", File("sdcard", "test.mp3"))
+        loadDownloads()
 
         // Check how it was started and if we can get the youtube link
         if (savedInstanceState == null && Intent.ACTION_SEND == intent.action
@@ -82,17 +87,24 @@ class MainActivity : AppCompatActivity() {
         redrawTable()
     }
 
-    override fun onDestroy() {
+    override fun onPause() {
         saveDownloads()
-        super.onDestroy()
+        super.onPause()
     }
 
     private fun loadDownloads() {
-        // TODO load the downloads stored in
+        Gson().fromJson<MutableList<Download>>(
+            sharedPrefs.getString("SAVED_DOWNLOADS", ""),
+            object : TypeToken<MutableList<Download>>() {
+            }.type
+        )?.let {downloads = it}
     }
 
     private fun saveDownloads() {
-        // TODO save the downloads stored in
+        sharedPrefs.edit().apply {
+            putString("SAVED_DOWNLOADS", Gson().toJson(downloads))
+            apply()
+        }
     }
 
     private fun redrawTable() {
