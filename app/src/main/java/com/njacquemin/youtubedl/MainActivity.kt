@@ -6,11 +6,13 @@ import android.os.Bundle
 import android.content.Intent
 import android.view.LayoutInflater
 import android.view.View
+import android.widget.ImageButton
 import android.widget.TableRow
 import android.widget.TextView
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.dialog_link_name.view.*
 import kotlinx.android.synthetic.main.dialog_add_link.view.*
+import java.io.File
 
 private fun layoutParam(weight: Float): TableRow.LayoutParams {
     return TableRow.LayoutParams(
@@ -75,7 +77,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    override fun onResume(){
+    override fun onResume() {
         super.onResume()
         redrawTable()
     }
@@ -85,19 +87,19 @@ class MainActivity : AppCompatActivity() {
         super.onDestroy()
     }
 
-    private fun loadDownloads(){
+    private fun loadDownloads() {
         // TODO load the downloads stored in
     }
 
-    private fun saveDownloads(){
+    private fun saveDownloads() {
         // TODO save the downloads stored in
     }
 
-    private fun redrawTable(){
+    private fun redrawTable() {
         val header = table.getChildAt(0)
         table.removeAllViews()
         table.addView(header)
-        for (dl in downloads){
+        for (dl in downloads) {
             addRow(dl)
         }
     }
@@ -109,19 +111,42 @@ class MainActivity : AppCompatActivity() {
             text = dl.link
             layoutParams = layoutParam(2.0f)
             setBackgroundResource(background)
-            setPadding(10, 0, 0,0)
+            setPadding(10, 0, 0, 0)
         }
         val nameView = TextView(applicationContext).apply {
             text = dl.name
             layoutParams = layoutParam(3.0f)
             setBackgroundResource(background)
-            setPadding(10, 0, 0,0)
+            setPadding(10, 0, 0, 0)
         }
-        val buttonView = TextView(applicationContext).apply {
-            text = if (dl.downloaded) "Yes" else "No"
+        val buttonView = ImageButton(applicationContext).apply {
+            setImageResource(if (dl.downloaded) R.drawable.ic_delete_forever_black_24dp else R.drawable.ic_file_download_black_24dp)
             layoutParams = layoutParam(1.0f)
             setBackgroundResource(background)
-            setPadding(10, 0, 0,0)
+            setPadding(10, 0, 0, 0)
+            setOnClickListener {
+                if (dl.downloaded) {
+                    // Remove
+                    var idxToRemove = -1
+                    downloads.forEachIndexed { index, download ->
+                        if (dl == download) {
+                            idxToRemove = index
+                        }
+                    }
+                    if (idxToRemove != -1) {
+                        downloads.removeAt(idxToRemove)
+                    }
+                    redrawTable()
+                } else {
+                    setImageResource(R.drawable.ic_access_time_black_24dp)
+                    isEnabled = false
+                    // Launch download
+                    youtube.download(dl.link, File("sdcard", dl.name + ".mp3")) {
+                        downloads.find { candidate -> candidate == dl }?.downloaded = true
+                        redrawTable()
+                    }
+                }
+            }
         }
         newRow.addView(linkView)
         newRow.addView(nameView)

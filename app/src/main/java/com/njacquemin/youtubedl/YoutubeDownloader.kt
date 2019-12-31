@@ -23,9 +23,12 @@ class YoutubeDownloader(val context: Context, val callbacks: Callbacks?) {
     private var ytDownloader: PyObject
 
     @Synchronized
-    fun download(link: String, output: File) {
+    fun download(link: String, output: File, doneCallback: () -> Unit) {
         ytDownloader.callAttr("download", arrayOf(link))
 
+        while (ffmpeg.isFFmpegCommandRunning) {
+            Thread.sleep(1000)
+        }
         ffmpeg.execute(
             arrayOf("-i", File(context.filesDir, "yt-dl.tmp").absolutePath, output.absolutePath),
             object : ExecuteBinaryResponseHandler() {
@@ -48,6 +51,7 @@ class YoutubeDownloader(val context: Context, val callbacks: Callbacks?) {
 
                 override fun onFinish() {
                     callbacks?.onFfmpegFinish()
+                    doneCallback()
                 }
             })
     }
