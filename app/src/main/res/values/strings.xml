@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">Youtube Downloader</string>
+    <string name="link_name">Name</string>
+    <string name="set_name">Set the link name</string>
 </resources>
