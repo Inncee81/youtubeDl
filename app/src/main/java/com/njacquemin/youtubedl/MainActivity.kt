@@ -20,6 +20,8 @@ import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import com.google.gson.reflect.TypeToken
 
+private const val YT_DOWNLOAD_REQUEST_CODE = 0
+
 private val PERMISSIONS = arrayOf(
     Manifest.permission.WRITE_EXTERNAL_STORAGE
 )
@@ -38,7 +40,7 @@ class MainActivity : AppCompatActivity() {
 
     private var downloads: MutableList<Download> = ArrayList()
 
-    private lateinit var youtube: YoutubeDownloader
+
 
     private lateinit var sharedPrefs: SharedPreferences
 
@@ -46,7 +48,6 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        youtube = YoutubeDownloader(this, null)
         sharedPrefs = getSharedPreferences("MyPreferences", Context.MODE_PRIVATE)
 
         loadDownloads()
@@ -184,10 +185,15 @@ class MainActivity : AppCompatActivity() {
                     setImageResource(R.drawable.ic_access_time_black_24dp)
                     isEnabled = false
                     // Launch download
-                    youtube.download(dl.link, File("sdcard", dl.name + ".mp3")) {success ->
-                        downloads.find { candidate -> candidate == dl }?.downloaded = success
-                        redrawTable()
-                    }
+
+                    val pendingResult = createPendingResult(
+                        YT_DOWNLOAD_REQUEST_CODE, Intent(), 0
+                    )
+                    val intent = Intent(applicationContext, YoutubeDlService::class.java)
+                    intent.putExtra(LINK, dl.link)
+                    intent.putExtra(FILEPATH,File("sdcard", dl.name + ".mp3").absolutePath)
+                    intent.putExtra(PENDING_RESULT_EXTRA, pendingResult)
+                    startService(intent)
                 }
             }
         }
@@ -195,5 +201,16 @@ class MainActivity : AppCompatActivity() {
         newRow.addView(nameView)
         newRow.addView(buttonView)
         table.addView(newRow)
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        if (requestCode == YT_DOWNLOAD_REQUEST_CODE) {
+            val link = data!!.getStringExtra(LINK)
+            downloads.find {
+                candidate -> candidate.link == link
+            }?.downloaded = true
+            redrawTable()
+        }
+        super.onActivityResult(requestCode, resultCode, data)
     }
 }

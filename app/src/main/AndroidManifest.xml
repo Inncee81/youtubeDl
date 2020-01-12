@@ -25,6 +25,8 @@
                 <data android:mimeType="text/plain" />
             </intent-filter>
         </activity>
+        <service android:name=".YoutubeDlService" />
+
     </application>
 
 </manifest>
